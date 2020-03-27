@@ -1,29 +1,39 @@
 # prototype
 Test projest for Alber Blanc C++ Core
 
-Build:
-CppServer (should be git submodule)
+##Комментарии
+Переупорядочение полей в структурах не привело к уменьшению их размера из-за выравнивания.
+Заменять std::string не стал, так как эффект от эксплуатации Small String Optimization дал
+лишь ~5% ускорения.
+
+##Description
+I've been using [boost::pfr](https://github.com/apolukhin/magic_get) and
+[YetAnotherSerializer](https://github.com/niXman/yas) for serialization.
+And [CppServer](https://github.com/chronoxor/CppServer) as network lib.
+
+##Build
+###CppServer (should be git submodule)
 
 cd prototype/lib/cppserver
 gil update
 cd build
 OPENSSL_ROOT_DIR=/usr/local/opt/openssl/ ./unix.sh
 
-cd ../../../.. 
+###prototype
+cd ../../../..
 mkdir build
 cd build
 
 OPENSSL_ROOT_DIR=/usr/local/opt/openssl/ cmake -DCMAKE_BUILD_TYPE=Release ../prototype
-cmake --build . 
+cmake --build .
 
-Run:
+##Run
 bin/server
-bin/client -z 10 -t 1 -v 0 
+bin/client -z 10 -t 1 -v 0
 
+##Some results:
 
-Some results:
-
-Small String Optimization (22 chars for libc++) 
+###Small String Optimization (22 chars for libc++)
 
 ping - pong round trip count: 124720
 ping - pong round trip avg: 38.994 mcs
@@ -38,7 +48,7 @@ request - reply serialization count: 249439
 request - reply serialization avg: 408 ns
 request - reply serialization total: 102.020 ms
 
-Not so small strings (23 chars for libc++) 
+###Not so small strings (23 chars for libc++)
 
 ping - pong round trip count: 115975
 ping - pong round trip avg: 41.000 mcs
@@ -53,7 +63,7 @@ request - reply serialization count: 231949
 request - reply serialization avg: 803 ns
 request - reply serialization total: 186.330 ms
 
-// another launch
+####another launch
 ping - pong round trip count: 121321
 ping - pong round trip avg: 39.211 mcs
 ping - pong round trip total: 4.757 s
@@ -67,7 +77,7 @@ request - reply serialization count: 242641
 request - reply serialization avg: 782 ns
 request - reply serialization total: 189.900 ms
 
-Giant strings (100k chars)
+###Giant strings (100k chars)
 
 ping - pong round trip count: 10941
 ping - pong round trip avg: 63.100 mcs
