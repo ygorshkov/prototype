@@ -12,12 +12,12 @@ namespace prototype {
 /// Holds incomplete buffer
 class Capacitor{
 public:
-  const std::pair<std::uint32_t, typename message::id> header;
+  const Header header;
   
-  Capacitor(std::pair<std::uint32_t, typename message::id> _header, const char* buffer, size_t size)
+  Capacitor(Header _header, const char* buffer, size_t size)
       : header{_header},
-        buffer_{allocate_buffer(header.first)},
-        required_{header.first}
+        buffer_{allocate_buffer(header.size)},
+        required_{header.size}
   {
     append(buffer, size);
   }
@@ -27,7 +27,7 @@ public:
   
   std::uint32_t append(const char* buffer, size_t size) {
     auto consume = std::min(size, required_);
-    std::copy(buffer, buffer + consume, buffer_.first.get() + header.first - required_);
+    std::copy(buffer, buffer + consume, buffer_.first.get() + header.size - required_);
     required_ -= consume;
     return consume;
   }

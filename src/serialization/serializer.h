@@ -22,10 +22,16 @@ buffer_pair allocate_buffer(const std::size_t size) {
   return {std::move(buffer), size};
 }
 
+struct Header {
+  message::sequence_id sequence_id;
+  uint32_t size;
+  message::id message_id;
+};
+  
 class Serializer {
 public:
   template <typename Message>
-  static buffer_pair serialize(const Message& message) {
+  static buffer_pair serialize(message::sequence_id sequence_id, const Message& message) {
     auto ostream = yas::mem_ostream{};
     reserve_space_for_header(ostream);
     
@@ -34,7 +40,7 @@ public:
     oarchive & tuple;
 
     const auto& intrusive_buffer = ostream.get_intrusive_buffer();
-    write_header(Message::message_id, intrusive_buffer.data, intrusive_buffer.size);
+    write_header(sequence_id, Message::message_id, intrusive_buffer.data, intrusive_buffer.size);
     
     const auto& shared_buffer = ostream.get_shared_buffer();
     return {shared_buffer.data, shared_buffer.size};
@@ -50,7 +56,7 @@ public:
 
   static constexpr std::size_t header_size() {
     static_assert(sizeof(std::uint32_t) == sizeof(message::id), "bad types");
-    return sizeof(std::uint32_t) + sizeof(message::id);
+    return sizeof(Header);
   }
 
   template <typename OS>
@@ -59,17 +65,19 @@ public:
     ostream.write(header_buffer, header_size());
   }
 
-  static void write_header(message::id message_id, const char* ptr, std::size_t size) {
+  static void write_header(message::sequence_id sequence_id, message::id message_id, const char* ptr, std::size_t size) {
     auto* header = (std::uint32_t*)ptr;
-    header[0] = htonl((std::uint32_t)(size - header_size()));
-    header[1] = htonl(message_id);
+    header[0] = htonl(sequence_id);
+    header[1] = htonl((std::uint32_t)(size - header_size()));
+    header[2] = htonl(message_id);
   }
   
-  static auto read_header(const char* ptr, std::size_t/* size*/) {
+  static Header read_header(const char* ptr, std::size_t/* size*/) {
     const auto* header = (const std::uint32_t*)ptr;
-    return std::pair<std::uint32_t, typename message::id>{
-      ntohl(header[0]),
-      static_cast<typename message::id>(ntohl(header[1]))
+    return {
+      static_cast<typename message::sequence_id>(ntohl(header[0])),
+      ntohl(header[1]),
+      static_cast<typename message::id>(ntohl(header[2]))
     };
   }
 };

@@ -23,57 +23,57 @@ public:
   using TCPSession::TCPSession;
   
 private:
-  void pong(const message::Ping& ping) {
+  void pong(message::sequence_id sequence_id, const message::Ping& ping) {
     message::Pong pong{-ping.t, ping.t, 'X'};
-    send(pong);
+    send(sequence_id, pong);
   }
   
-  void reply(const message::Request& request) {
+  void reply(message::sequence_id sequence_id, const message::Request& request) {
     message::Reply reply{request.id, request.id, request.e, 2.71f, request.a, request.c, static_cast<int8_t>(request.d)};
-    send(reply);
+    send(sequence_id, reply);
   }
   
-  void on_message(const message::Pong& pong) {
+  void on_message(message::sequence_id sequence_id, const message::Pong& pong) {
     using namespace boost::pfr::ops;
     std::cout << "Unexpected message: " << pong << std::endl;
   }
   
-  void on_message(const message::Reply& reply) {
+  void on_message(message::sequence_id sequence_id, const message::Reply& reply) {
     using namespace boost::pfr::ops;
     std::cout << "Unexpected message: " << reply << std::endl;
   }
   
-  void on_message(const message::Ping& ping) {
-    pong(ping);
+  void on_message(message::sequence_id sequence_id, const message::Ping& ping) {
+    pong(sequence_id, ping);
   }
   
-  void on_message(const message::Request& request) {
-    reply(request);
+  void on_message(message::sequence_id sequence_id, const message::Request& request) {
+    reply(sequence_id, request);
   }
   
   template <typename T>
-  void send(const T& message) {
-    auto buffer = Serializer::serialize(message);
+  void send(message::sequence_id sequence_id, const T& message) {
+    auto buffer = Serializer::serialize(sequence_id, message);
     SendAsync(buffer.first.get(), buffer.second);
   }
   
   template <typename T>
-  void read(const char* buffer, std::size_t buffer_size) {
+  void read(message::sequence_id sequence_id, const char* buffer, std::size_t buffer_size) {
     T message;
     prototype::Serializer::deserialize(buffer, buffer_size, message);
-    on_message(message);
+    on_message(sequence_id, message);
   }
   
   void onReceived(const void* buffer, size_t size) override
   {
     auto read_message = [this](const auto& header, const char* buffer) {
-      switch (header.second) {
-        case message::pong   : read<message::Pong>(buffer, header.first); break;
-        case message::reply  : read<message::Reply>(buffer, header.first); break;
-        case message::ping   : read<message::Ping>(buffer, header.first); break;
-        case message::request: read<message::Request>(buffer, header.first); break;
+      switch (header.message_id) {
+        case message::pong   : read<message::Pong>(header.sequence_id, buffer, header.size); break;
+        case message::reply  : read<message::Reply>(header.sequence_id, buffer, header.size); break;
+        case message::ping   : read<message::Ping>(header.sequence_id, buffer, header.size); break;
+        case message::request: read<message::Request>(header.sequence_id, buffer, header.size); break;
       }
-      return header.first;
+      return header.size;
     };
     
     auto head = static_cast<const char*>(buffer);
@@ -93,7 +93,7 @@ private:
       head += header_size;
       size -= header_size;
       
-      if (size < header.first) {
+      if (size < header.size) {
         capacitor = std::make_unique<Capacitor>(header, head, size);
         break;
       }

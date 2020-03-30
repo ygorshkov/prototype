@@ -8,7 +8,7 @@ namespace prototype::message {
 
 struct Reply {
   static const id message_id = reply;
-  
+
   std::string id1;
   std::string status;
   int64_t b1;

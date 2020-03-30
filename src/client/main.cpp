@@ -1,3 +1,6 @@
+#include <chrono>
+#include <iostream>
+
 #include <server/asio/service.h>
 #include <benchmark/reporter_console.h>
 #include <system/cpu.h>
@@ -18,6 +21,7 @@ int main(int argc, const char* argv[])
   parser.add_option("-t", "--threads").dest("threads").action("store").type("int").set_default(CppCommon::CPU::PhysicalCores()).help("Count of working threads. Default: %default");
   parser.add_option("-z", "--seconds").dest("seconds").action("store").type("int").set_default(10).help("Count of seconds to benchmarking. Default: %default");
   parser.add_option("-v", "--verbose").dest("verbose").action("store").type("bool").set_default(false).help("Verbose. Default: %default");
+  parser.add_option("-d", "--delay").dest("delay").action("store").type("int").set_default(10).help("Next message delay (us). Default: %default");
 
   optparse::Values options = parser.parse_args(argc, argv);
   
@@ -34,6 +38,7 @@ int main(int argc, const char* argv[])
   int threads_count = options.get("threads");
   int seconds_count = options.get("seconds");
   bool verbose = options.get("verbose");
+  int delay_us = options.get("delay");
   
   if (verbose) {
     std::cout << "string size: " << sizeof(std::string) << std::endl;
@@ -47,6 +52,7 @@ int main(int argc, const char* argv[])
     std::cout << "Working clients: " << 1 << std::endl;
     std::cout << "Seconds to benchmarking: " << seconds_count << std::endl;
     std::cout << "Verbose: " << verbose << std::endl;
+    std::cout << "Delay: " << delay_us << std::endl;
 
     std::cout << std::endl;
   }
@@ -58,7 +64,7 @@ int main(int argc, const char* argv[])
   std::cout << "Done!" << std::endl;
   
   // Create echo clients
-  auto client = std::make_shared<prototype::Client<prototype::message::SequentialFactory>>(service, address, port, verbose);
+  auto client = std::make_shared<prototype::Client>(service, address, port, verbose);
   // client->SetupNoDelay(true);
   
   // Connect clients
@@ -69,9 +75,25 @@ int main(int argc, const char* argv[])
     CppCommon::Thread::Yield();
   std::cout << "All clients connected!" << std::endl;
   
+  prototype::Measurer ping_pong {"ping - pong round trip"};
+  prototype::Measurer request_reply {"request - reply round trip"};
+
   // Wait for benchmarking
   std::cout << "Benchmarking...";
-  CppCommon::Thread::Sleep(seconds_count * 1000);
+
+  auto delay = std::chrono::microseconds(delay_us);
+  for (auto count = std::chrono::seconds(seconds_count) / (2 * delay); count --> 0;) {
+    auto m = std::make_shared<prototype::Measure>(ping_pong);
+    client->ping(prototype::message::SequentialFactory::create_ping(), [measure = m](const prototype::message::Pong& pong) {});
+    
+    std::this_thread::sleep_for(delay);
+    
+    auto n = std::make_shared<prototype::Measure>(request_reply);
+    client->request(prototype::message::SequentialFactory::create_request(), [measure = n](const prototype::message::Reply& reply) {});
+    
+    std::this_thread::sleep_for(delay);
+  }
+
   std::cout << "Done!" << std::endl;
   
   // Disconnect clients
@@ -97,10 +119,10 @@ int main(int argc, const char* argv[])
     std::cout << measurer.name << " total: " << CppBenchmark::ReporterConsole::GenerateTimePeriod(measurer.total_ns())<< '\n';
   };
 
-  print_measures(client->ping_pong);
+  print_measures(ping_pong);
   print_measures(client->ping_pong_ser);
-  print_measures(client->request_reply);
+  print_measures(request_reply);
   print_measures(client->request_reply_ser);
-  
+
   return 0;
 }
