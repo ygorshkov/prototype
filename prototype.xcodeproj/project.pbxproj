@@ -4505,6 +4505,7 @@
 		D2400C99242DA05E0006562D /* capacitor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = capacitor.h; sourceTree = "<group>"; };
 		D2400C9A242DA5280006562D /* measure.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = measure.h; sourceTree = "<group>"; };
 		D2400C9B242DA8090006562D /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		D24956F42432455F00D209B8 /* receiver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = receiver.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -9370,6 +9371,7 @@
 			children = (
 				D2400C98242DA0510006562D /* CMakeLists.txt */,
 				D2400C99242DA05E0006562D /* capacitor.h */,
+				D24956F42432455F00D209B8 /* receiver.h */,
 			);
 			path = common;
 			sourceTree = "<group>";

@@ -14,7 +14,7 @@
 #include "message/id.h"
 
 #include "serialization/serializer.h"
-#include "common/capacitor.h"
+#include "common/receiver.h"
 #include "measure.h"
 
 std::atomic<uint64_t> total_errors(0);
@@ -23,8 +23,6 @@ namespace prototype {
 
 class Client : public CppServer::Asio::TCPClient
 {
-  enum { header_size = Serializer::header_size() };
-
   template <typename F>
   struct Callbacks {
     using Callback = std::function<F>;
@@ -135,10 +133,10 @@ private:
   void onConnected() override {}
 
   void onSent(size_t sent, size_t pending) override {}
-                                                               
+
   void onReceived(const void* buffer, size_t size) override
   {
-    auto read_message = [this](const auto& header, const char* buffer) {
+    receiver.on_received(buffer, size, [this](const auto& header, const char* buffer) {
       switch (header.message_id) {
         case message::pong   : read<message::Pong>(header.sequence_id, buffer, header.size, ping_pong_ser); break;
         case message::reply  : read<message::Reply>(header.sequence_id, buffer, header.size, request_reply_ser); break;
@@ -146,34 +144,7 @@ private:
         case message::request: read<message::Request>(header.sequence_id, buffer, header.size, request_reply_ser); break;
       }
       return header.size;
-    };
-    
-    auto head = static_cast<const char*>(buffer);
-    if (capacitor) { // waiting for the rest of message
-      auto consumed = capacitor->append(head, size);
-      head += consumed;
-      size -= consumed;
-      
-      if (0 == capacitor->required()) {
-        read_message(capacitor->header, capacitor->buffer().first.get());
-        capacitor = nullptr;
-      }
-    }
-    
-    while (size >= header_size) {
-      const auto header = Serializer::read_header(head, header_size);
-      head += header_size;
-      size -= header_size;
-
-      if (size < header.size) {
-        capacitor = std::make_unique<Capacitor>(header, head, size);
-        break;
-      }
-      
-      auto read = read_message(header, head);
-      head += read;
-      size -= read;
-    }
+    });
   }
 
   void onError(int error, const std::string& category, const std::string& message) override
@@ -181,7 +152,7 @@ private:
     std::cout << "TCP client caught an error with code " << error << " and category '" << category << "': " << message << std::endl;
   }
   
-  std::unique_ptr<Capacitor> capacitor;
+  Receiver receiver;
 
   bool verbose_ = false;
 };

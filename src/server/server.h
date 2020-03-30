@@ -11,7 +11,7 @@
 #include "message/request.h"
 #include "message/reply.h"
 #include "serialization/serializer.h"
-#include "common/capacitor.h"
+#include "common/receiver.h"
 
 namespace prototype {
   
@@ -76,39 +76,14 @@ private:
       return header.size;
     };
     
-    auto head = static_cast<const char*>(buffer);
-    if (capacitor) { // waiting for the rest of message
-      auto consumed = capacitor->append(head, size);
-      head += consumed;
-      size -= consumed;
-      
-      if (0 == capacitor->required()) {
-        read_message(capacitor->header, capacitor->buffer().first.get());
-        capacitor = nullptr;
-      }
-    }
-    
-    while (size >= header_size) {
-      const auto header = Serializer::read_header(head, header_size);
-      head += header_size;
-      size -= header_size;
-      
-      if (size < header.size) {
-        capacitor = std::make_unique<Capacitor>(header, head, size);
-        break;
-      }
-      
-      auto read = read_message(header, head);
-      head += read;
-      size -= read;
-    }
+    receiver.on_received(buffer, size, read_message);
   }
   
   void onError(int error, const std::string& category, const std::string& message) override {
     std::cout << "TCP session caught an error with code " << error << " and category '" << category << "': " << message << std::endl;
   }
   
-  std::unique_ptr<Capacitor> capacitor;
+  Receiver receiver;
 };
 
 class Server final : public CppServer::Asio::TCPServer
