@@ -3,8 +3,7 @@ Test projest for Alber Blanc C++ Core
 
 ## Комментарии
 Переупорядочение полей в структурах не привело к уменьшению их размера из-за выравнивания.
-Заменять std::string не стал, так как эффект от эксплуатации Small String Optimization дал
-лишь ~5% ускорения.
+Заменять std::string не стал, так как выбранное для сериализации решение поддерживает только aggregate initializable types.
 
 ## Description
 I've been using [boost::pfr](https://github.com/apolukhin/magic_get) and

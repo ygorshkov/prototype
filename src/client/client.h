@@ -4,7 +4,6 @@
 #include <memory>
 #include <array>
 
-#include <boost/pfr.hpp>
 #include <server/asio/tcp_client.h>
 
 #include "message/ping.h"
@@ -55,7 +54,7 @@ class Client : public CppServer::Asio::TCPClient
     message::sequence_id get_next_sequence_id(message::sequence_id seq_id) {
       while (callbacks[seq_id]) { // spin lock sending thread
         // TODO: do something here
-        //seq_id = ++sequence_id & max_sequence_id;
+        std::terminate();
       }
       return seq_id;
     }
@@ -68,8 +67,8 @@ class Client : public CppServer::Asio::TCPClient
   Callbacks<void(const message::Reply&)> on_replies_;
 
 public:
-  Client(const std::shared_ptr<CppServer::Asio::Service>& service, const std::string& address, int port, bool verbose = false)
-      : TCPClient(service, address, port), verbose_{verbose}
+  Client(const std::shared_ptr<CppServer::Asio::Service>& service, const std::string& address, int port)
+      : TCPClient(service, address, port)
   {}
  
   Measurer ping_pong_ser {"ping - pong serialization"};
@@ -122,11 +121,6 @@ private:
       prototype::Serializer::deserialize(buffer, buffer_size, message);
     }
     
-    if (verbose_) {
-      using namespace boost::pfr::ops;
-      std::cout << message << '\n';
-    }
-    
     on_message(sequence_id, message);
   }
   
@@ -153,8 +147,6 @@ private:
   }
   
   Receiver receiver;
-
-  bool verbose_ = false;
 };
 
 }

@@ -1,6 +1,8 @@
 #include <chrono>
 #include <iostream>
 
+#include <boost/pfr.hpp>
+
 #include <server/asio/service.h>
 #include <benchmark/reporter_console.h>
 #include <system/cpu.h>
@@ -64,7 +66,7 @@ int main(int argc, const char* argv[])
   std::cout << "Done!" << std::endl;
   
   // Create echo clients
-  auto client = std::make_shared<prototype::Client>(service, address, port, verbose);
+  auto client = std::make_shared<prototype::Client>(service, address, port);
   // client->SetupNoDelay(true);
   
   // Connect clients
@@ -81,17 +83,29 @@ int main(int argc, const char* argv[])
   // Wait for benchmarking
   std::cout << "Benchmarking...";
 
+  using namespace boost::pfr::ops;
+
   auto delay = std::chrono::microseconds(delay_us);
   for (auto count = std::chrono::seconds(seconds_count) / (2 * delay); count --> 0;) {
     {
       auto m = std::make_shared<prototype::Measure>(ping_pong);
-      client->ping(prototype::message::GiantFactory::create_ping(), [measure = m](const prototype::message::Pong& pong) {});
+      client->ping(prototype::message::GiantFactory::create_ping(), [measure = m, verbose](const prototype::message::Pong& pong) mutable {
+        measure.reset();
+        if (verbose) {
+          std::cout << pong << '\n';
+        }
+      });
     }
     std::this_thread::sleep_for(delay);
     
     {
       auto m = std::make_shared<prototype::Measure>(request_reply);
-      client->request(prototype::message::GiantFactory::create_request(), [measure = m](const prototype::message::Reply& reply) {});
+      client->request(prototype::message::GiantFactory::create_request(), [measure = m, verbose](const prototype::message::Reply& reply) mutable {
+        measure.reset();
+        if (verbose) {
+          std::cout << reply << '\n';
+        }
+      });
     }
     std::this_thread::sleep_for(delay);
   }
