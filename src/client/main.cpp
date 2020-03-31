@@ -83,14 +83,16 @@ int main(int argc, const char* argv[])
 
   auto delay = std::chrono::microseconds(delay_us);
   for (auto count = std::chrono::seconds(seconds_count) / (2 * delay); count --> 0;) {
-    auto m = std::make_shared<prototype::Measure>(ping_pong);
-    client->ping(prototype::message::SequentialFactory::create_ping(), [measure = m](const prototype::message::Pong& pong) {});
-    
+    {
+      auto m = std::make_shared<prototype::Measure>(ping_pong);
+      client->ping(prototype::message::GiantFactory::create_ping(), [measure = m](const prototype::message::Pong& pong) {});
+    }
     std::this_thread::sleep_for(delay);
     
-    auto n = std::make_shared<prototype::Measure>(request_reply);
-    client->request(prototype::message::SequentialFactory::create_request(), [measure = n](const prototype::message::Reply& reply) {});
-    
+    {
+      auto m = std::make_shared<prototype::Measure>(request_reply);
+      client->request(prototype::message::GiantFactory::create_request(), [measure = m](const prototype::message::Reply& reply) {});
+    }
     std::this_thread::sleep_for(delay);
   }
 
@@ -114,9 +116,7 @@ int main(int argc, const char* argv[])
   std::cout << std::endl;
   
   auto print_measures = [] (const prototype::Measurer& measurer) {
-    std::cout << measurer.name << " count: " << measurer.count() << '\n';
     std::cout << measurer.name << " avg: " << CppBenchmark::ReporterConsole::GenerateTimePeriod(measurer.avg_ns()) << '\n';
-    std::cout << measurer.name << " total: " << CppBenchmark::ReporterConsole::GenerateTimePeriod(measurer.total_ns())<< '\n';
   };
 
   print_measures(ping_pong);
