@@ -41,10 +41,10 @@ bin/client -z 10 -t 1 -v 0
 ```
 ./client -z 1 -t 4 -v 0 -l 61 -d 1
 
-ping - pong round trip avg: 12.414 mcs
-ping - pong serialization avg: 319 ns
-request - reply round trip avg: 12.365 mcs
-request - reply serialization avg: 471 ns
+ping - pong round trip avg: 13.236 mcs
+ping - pong serialization avg: 315 ns
+request - reply round trip avg: 13.351 mcs
+request - reply serialization avg: 278 ns  // faster than ping-pong o_0
 ```
 
 ### Not so small strings (62 chars)
