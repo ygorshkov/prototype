@@ -4506,6 +4506,7 @@
 		D2400C9A242DA5280006562D /* measure.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = measure.h; sourceTree = "<group>"; };
 		D2400C9B242DA8090006562D /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		D24956F42432455F00D209B8 /* receiver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = receiver.h; sourceTree = "<group>"; };
+		D24956F62433464C00D209B8 /* nssso_string.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nssso_string.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -4581,6 +4582,7 @@
 		D22EBBC7242B3E60004AD717 /* message */ = {
 			isa = PBXGroup;
 			children = (
+				D24956F62433464C00D209B8 /* nssso_string.h */,
 				D22EBBCB242B3E98004AD717 /* CMakeLists.txt */,
 				D22EBBCC242B3E98004AD717 /* ping.h */,
 				D22EBBCA242B3E98004AD717 /* pong.h */,

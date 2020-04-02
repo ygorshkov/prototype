@@ -13,7 +13,7 @@ struct SequentialFactory {
     return {++t};
   }
   
-  static Request create_request() {
+  static Request create_request(std::size_t string_length) {
     static char ch;
     static double f;
     static int64_t d;
@@ -21,40 +21,17 @@ struct SequentialFactory {
     static int32_t a;
     static int32_t b;
     static int8_t c;
-    return {std::string(50, ++ch), ++f, ++d, ++e, ++a, ++b, ++c };
+    return {std::string(string_length, ++ch), ++f, ++d, ++e, ++a, ++b, ++c };
   }
 };
 
-/// Small String Optimization Factory
-struct SSOFactory {
+struct FixedFactory {
   static Ping create_ping() {
     return {42};
   }
   
-  static Request create_request() {
-    return {std::string(std::string().capacity(), '*'), 3.1415, 1LL, 2LL, 3, 4, '5'};
-  }
-};
-
-/// Not So Small String Factory
-struct NSSSFactory {
-  static Ping create_ping() {
-    return {42};
-  }
-  
-  static Request create_request() {
-    return {std::string(std::string().capacity() + 1, '*'), 3.1415, 1LL, 2LL, 3, 4, '5'};
-  }
-};
-  
-/// Giant String Factory
-struct GiantFactory {
-  static Ping create_ping() {
-    return {42};
-  }
-  
-  static Request create_request() {
-    return {std::string(100'000, '*'), 3.1415, 1LL, 2LL, 3, 4, '5'};
+  static Request create_request(std::size_t string_length) {
+    return {std::string(string_length, '*'), 3.1415, 1LL, 2LL, 3, 4, '5'};
   }
 };
 

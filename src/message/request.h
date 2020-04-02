@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include "nssso_string.h"
 #include "id.h"
 
 namespace prototype::message {
@@ -9,7 +10,7 @@ namespace prototype::message {
 struct Request {
   static const id message_id = request;
 
-  std::string id;
+  String id;
   double f;
   int64_t d;
   int64_t e;

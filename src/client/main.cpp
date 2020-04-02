@@ -24,6 +24,7 @@ int main(int argc, const char* argv[])
   parser.add_option("-z", "--seconds").dest("seconds").action("store").type("int").set_default(10).help("Count of seconds to benchmarking. Default: %default");
   parser.add_option("-v", "--verbose").dest("verbose").action("store").type("bool").set_default(false).help("Verbose. Default: %default");
   parser.add_option("-d", "--delay").dest("delay").action("store").type("int").set_default(10).help("Next message delay (us). Default: %default");
+  parser.add_option("-l", "--length").dest("length").action("store").type("int").set_default(50).help("Strings length (chars). Default: %default");
 
   optparse::Values options = parser.parse_args(argc, argv);
   
@@ -41,9 +42,10 @@ int main(int argc, const char* argv[])
   int seconds_count = options.get("seconds");
   bool verbose = options.get("verbose");
   int delay_us = options.get("delay");
+  int length = options.get("length");
   
   if (verbose) {
-    std::cout << "string size: " << sizeof(std::string) << std::endl;
+    std::cout << "string size: " << sizeof(prototype::message::String) << std::endl;
     std::cout << "Pong size: " << sizeof(prototype::message::Pong) << std::endl;
     std::cout << "Request size: " << sizeof(prototype::message::Request) << std::endl;
     std::cout << "Reply size: " << sizeof(prototype::message::Reply) << std::endl;
@@ -55,6 +57,7 @@ int main(int argc, const char* argv[])
     std::cout << "Seconds to benchmarking: " << seconds_count << std::endl;
     std::cout << "Verbose: " << verbose << std::endl;
     std::cout << "Delay: " << delay_us << std::endl;
+    std::cout << "Length: " << length << std::endl;
 
     std::cout << std::endl;
   }
@@ -89,7 +92,7 @@ int main(int argc, const char* argv[])
   for (auto count = std::chrono::seconds(seconds_count) / (2 * delay); count --> 0;) {
     {
       auto m = std::make_shared<prototype::Measure>(ping_pong);
-      client->ping(prototype::message::GiantFactory::create_ping(), [measure = m, verbose](const prototype::message::Pong& pong) mutable {
+      client->ping(prototype::message::FixedFactory::create_ping(), [measure = m, verbose](const prototype::message::Pong& pong) mutable {
         measure.reset();
         if (verbose) {
           std::cout << pong << '\n';
@@ -100,7 +103,7 @@ int main(int argc, const char* argv[])
     
     {
       auto m = std::make_shared<prototype::Measure>(request_reply);
-      client->request(prototype::message::GiantFactory::create_request(), [measure = m, verbose](const prototype::message::Reply& reply) mutable {
+      client->request(prototype::message::FixedFactory::create_request(length), [measure = m, verbose](const prototype::message::Reply& reply) mutable {
         measure.reset();
         if (verbose) {
           std::cout << reply << '\n';
