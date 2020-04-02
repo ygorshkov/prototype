@@ -3,7 +3,7 @@ Test projest for Alber Blanc C++ Core
 
 ## Комментарии
 Переупорядочение полей в структурах не привело к уменьшению их размера из-за выравнивания.
-Заменять std::string не стал, так как выбранное для сериализации решение поддерживает только aggregate initializable types.
+std::string заменил на свою строку, которая содержит до 61 символа не выделяя память на куче.
 
 ## Description
 I've been using [boost::pfr](https://github.com/apolukhin/magic_get) and
@@ -37,9 +37,9 @@ bin/client -z 10 -t 1 -v 0
 
 ## Some results:
 
-### Small String Optimization (22 chars for libc++)
+### Custom Small String Optimization (61 chars)
 ```
-./client -z 1 -t 4 -v 0 -d 1
+./client -z 1 -t 4 -v 0 -l 61 -d 1
 
 ping - pong round trip avg: 12.414 mcs
 ping - pong serialization avg: 319 ns
@@ -47,22 +47,22 @@ request - reply round trip avg: 12.365 mcs
 request - reply serialization avg: 471 ns
 ```
 
-### Not so small strings (23 chars for libc++)
+### Not so small strings (62 chars)
 ```
-./client -z 1 -t 4 -v 0 -d 1
+./client -z 1 -t 4 -v 0 -l 62 -d 1
 
-ping - pong round trip avg: 12.749 mcs
-ping - pong serialization avg: 328 ns
-request - reply round trip avg: 13.257 mcs
-request - reply serialization avg: 698 ns
+ping - pong round trip avg: 13.459 mcs
+ping - pong serialization avg: 327 ns
+request - reply round trip avg: 13.482 mcs
+request - reply serialization avg: 493 ns
 ```
 
 ### Giant strings (100k chars)
 ```
-./client -z 1 -t 4 -v 0 -d 100
+./client -z 1 -t 4 -v 0 -l 100000 -d 100
 
-ping - pong round trip avg: 223.283 mcs
-ping - pong serialization avg: 462 ns
-request - reply round trip avg: 385.310 mcs
-request - reply serialization avg: 20.960 mcs
+ping - pong round trip avg: 349.736 mcs
+ping - pong serialization avg: 562 ns
+request - reply round trip avg: 379.994 mcs
+request - reply serialization avg: 17.139 mcs
 ```
