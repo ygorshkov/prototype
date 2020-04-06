@@ -12,6 +12,7 @@
 #include "message/reply.h"
 #include "serialization/serializer.h"
 #include "common/receiver.h"
+#include "common/protocol.h"
 
 namespace prototype {
   
@@ -56,24 +57,16 @@ private:
     auto buffer = Serializer::serialize(sequence_id, message);
     SendAsync(buffer.first.get(), buffer.second);
   }
-  
-  template <typename T>
-  void read(message::sequence_id sequence_id, const char* buffer, std::size_t buffer_size) {
-    T message;
-    prototype::Serializer::deserialize(buffer, buffer_size, message);
-    on_message(sequence_id, message);
-  }
-  
+
   void onReceived(const void* buffer, size_t size) override
   {
-    auto read_message = [this](const auto& header, const char* buffer) {
-      switch (header.message_id) {
-        case message::pong   : read<message::Pong>(header.sequence_id, buffer, header.size); break;
-        case message::reply  : read<message::Reply>(header.sequence_id, buffer, header.size); break;
-        case message::ping   : read<message::Ping>(header.sequence_id, buffer, header.size); break;
-        case message::request: read<message::Request>(header.sequence_id, buffer, header.size); break;
-      }
-      return header.size;
+    auto read_message = [this](const auto& header, const char* data) {
+      return dispatch(header, data)(
+        on<message::Ping>([this](auto sequence_id, auto message) { on_message(sequence_id, message); }),
+        on<message::Pong>([this](auto sequence_id, auto message) { on_message(sequence_id, message); }),
+        on<message::Request>([this](auto sequence_id, auto message) { on_message(sequence_id, message); }),
+        on<message::Reply>([this](auto sequence_id, auto message) { on_message(sequence_id, message); }),
+        other([this](auto header, auto buffer) { onError(42, "protocol error", "unknown message type"); }));
     };
     
     receiver.on_received(buffer, size, read_message);

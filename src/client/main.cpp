@@ -91,7 +91,7 @@ int main(int argc, const char* argv[])
   auto delay = std::chrono::microseconds(delay_us);
   for (auto count = std::chrono::seconds(seconds_count) / (2 * delay); count --> 0;) {
     {
-      auto m = std::make_shared<prototype::Measure>(ping_pong);
+      auto m = std::make_shared<prototype::Measure>(&ping_pong);
       client->ping(prototype::message::FixedFactory::create_ping(), [measure = m, verbose](const prototype::message::Pong& pong) mutable {
         measure.reset();
         if (verbose) {
@@ -102,7 +102,7 @@ int main(int argc, const char* argv[])
     std::this_thread::sleep_for(delay);
     
     {
-      auto m = std::make_shared<prototype::Measure>(request_reply);
+      auto m = std::make_shared<prototype::Measure>(&request_reply);
       client->request(prototype::message::FixedFactory::create_request(length), [measure = m, verbose](const prototype::message::Reply& reply) mutable {
         measure.reset();
         if (verbose) {
@@ -137,9 +137,8 @@ int main(int argc, const char* argv[])
   };
 
   print_measures(ping_pong);
-  print_measures(client->ping_pong_ser);
   print_measures(request_reply);
-  print_measures(client->request_reply_ser);
+  print_measures(client->serialization);
 
   return 0;
 }

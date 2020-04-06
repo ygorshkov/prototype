@@ -14,7 +14,8 @@
 
 #include "serialization/serializer.h"
 #include "common/receiver.h"
-#include "measure.h"
+#include "common/protocol.h"
+#include "common/measure.h"
 
 std::atomic<uint64_t> total_errors(0);
 
@@ -71,17 +72,16 @@ public:
       : TCPClient(service, address, port)
   {}
  
-  Measurer ping_pong_ser {"ping - pong serialization"};
-  Measurer request_reply_ser {"request - reply serialization"};
+  Measurer serialization{"serialization"};
   
   template <typename F>
   void ping(const message::Ping& ping, F on_pong) {
-    send(on_pongs_.add_callback(on_pong), ping, ping_pong_ser);
+    send(on_pongs_.add_callback(on_pong), ping, serialization);
   }
 
   template <typename F>
   void request(const message::Request& request, F on_reply) {
-    send(on_replies_.add_callback(on_reply), request, request_reply_ser);
+    send(on_replies_.add_callback(on_reply), request, serialization);
   }
   
 private:
@@ -107,37 +107,25 @@ private:
   void send(message::sequence_id sequence_id, const T& message, Measurer& measurer) {
     buffer_pair buffer;
     {
-      Measure m{measurer};
+      Measure m{&measurer};
       buffer = Serializer::serialize(sequence_id, message);
     }
     SendAsync(buffer.first.get(), buffer.second);
   }
 
-  template <typename T>
-  void read(message::sequence_id sequence_id, const char* buffer, std::size_t buffer_size, Measurer& measurer) {
-    T message;
-    {
-      Measure m{measurer};
-      prototype::Serializer::deserialize(buffer, buffer_size, message);
-    }
-    
-    on_message(sequence_id, message);
-  }
-  
   void onConnected() override {}
 
   void onSent(size_t sent, size_t pending) override {}
 
   void onReceived(const void* buffer, size_t size) override
   {
-    receiver.on_received(buffer, size, [this](const auto& header, const char* buffer) {
-      switch (header.message_id) {
-        case message::pong   : read<message::Pong>(header.sequence_id, buffer, header.size, ping_pong_ser); break;
-        case message::reply  : read<message::Reply>(header.sequence_id, buffer, header.size, request_reply_ser); break;
-        case message::ping   : read<message::Ping>(header.sequence_id, buffer, header.size, ping_pong_ser); break;
-        case message::request: read<message::Request>(header.sequence_id, buffer, header.size, request_reply_ser); break;
-      }
-      return header.size;
+    receiver.on_received(buffer, size, [this](const Header& header, const char* data) {
+      return dispatch(header, data, &serialization)(
+        on<message::Ping>([this](auto sequence_id, auto message) { on_message(sequence_id, message); }),
+        on<message::Pong>([this](auto sequence_id, auto message) { on_message(sequence_id, message); }),
+        on<message::Request>([this](auto sequence_id, auto message) { on_message(sequence_id, message); }),
+        on<message::Reply>([this](auto sequence_id, auto message) { on_message(sequence_id, message); }),
+        other([this](auto header, auto buffer) { onError(42, "protocol error", "unknown message type"); }));
     });
   }
 

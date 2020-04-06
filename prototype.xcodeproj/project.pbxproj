@@ -4501,6 +4501,7 @@
 		D22EE005242BF031004AD717 /* server.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = server.cpp; sourceTree = "<group>"; };
 		D22EE006242BF04F004AD717 /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
 		D22EE007242BF335004AD717 /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
+		D23646D42437CD4D00E7C8C7 /* protocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = protocol.h; sourceTree = "<group>"; };
 		D2400C98242DA0510006562D /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
 		D2400C99242DA05E0006562D /* capacitor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = capacitor.h; sourceTree = "<group>"; };
 		D2400C9A242DA5280006562D /* measure.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = measure.h; sourceTree = "<group>"; };
@@ -4573,7 +4574,6 @@
 			children = (
 				D22EE006242BF04F004AD717 /* CMakeLists.txt */,
 				D22EE004242BF02B004AD717 /* client.h */,
-				D2400C9A242DA5280006562D /* measure.h */,
 				D2400C9B242DA8090006562D /* main.cpp */,
 			);
 			path = client;
@@ -9374,6 +9374,8 @@
 				D2400C98242DA0510006562D /* CMakeLists.txt */,
 				D2400C99242DA05E0006562D /* capacitor.h */,
 				D24956F42432455F00D209B8 /* receiver.h */,
+				D23646D42437CD4D00E7C8C7 /* protocol.h */,
+				D2400C9A242DA5280006562D /* measure.h */,
 			);
 			path = common;
 			sourceTree = "<group>";

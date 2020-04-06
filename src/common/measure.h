@@ -44,11 +44,11 @@ private:
 
 class Measure {
 public:
-  Measure(Measurer& measurer) : measurer_{measurer} { measurer_.start(); }
-  ~Measure() { measurer_.stop(); }
-  
+  explicit Measure(Measurer* measurer) : measurer_{measurer} { if (measurer_) measurer_->start(); }
+  ~Measure() { if (measurer_) measurer_->stop(); }
+
 private:
-  Measurer& measurer_;
+  Measurer* measurer_;
 };
 
 }
