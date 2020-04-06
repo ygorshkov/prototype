@@ -34,22 +34,10 @@ private:
     send(sequence_id, reply);
   }
   
-  void on_message(message::sequence_id sequence_id, const message::Pong& pong) {
+  template <typename T>
+  void on_message(message::sequence_id sequence_id, const T& message) {
     using namespace boost::pfr::ops;
-    std::cout << "Unexpected message: " << pong << std::endl;
-  }
-  
-  void on_message(message::sequence_id sequence_id, const message::Reply& reply) {
-    using namespace boost::pfr::ops;
-    std::cout << "Unexpected message: " << reply << std::endl;
-  }
-  
-  void on_message(message::sequence_id sequence_id, const message::Ping& ping) {
-    pong(sequence_id, ping);
-  }
-  
-  void on_message(message::sequence_id sequence_id, const message::Request& request) {
-    reply(sequence_id, request);
+    std::cout << "Unhandled message: " << message << std::endl;
   }
   
   template <typename T>
@@ -62,9 +50,9 @@ private:
   {
     auto read_message = [this](const auto& header, const char* data) {
       return dispatch(header, data)(
-        on<message::Ping>([this](auto sequence_id, auto message) { on_message(sequence_id, message); }),
+        on<message::Ping>([this](auto sequence_id, auto message) { pong(sequence_id, message); }),
         on<message::Pong>([this](auto sequence_id, auto message) { on_message(sequence_id, message); }),
-        on<message::Request>([this](auto sequence_id, auto message) { on_message(sequence_id, message); }),
+        on<message::Request>([this](auto sequence_id, auto message) { reply(sequence_id, message); }),
         on<message::Reply>([this](auto sequence_id, auto message) { on_message(sequence_id, message); }),
         other([this](auto header, auto buffer) { onError(42, "protocol error", "unknown message type"); }));
     };
