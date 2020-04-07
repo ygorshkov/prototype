@@ -41,8 +41,8 @@ bin/client -z 10 -t 1 -v 0
 ```
 ./client -z 1 -t 4 -v 0 -l 61 -d 1
 
-ping - pong round trip avg: 13.356 mcs
-request - reply round trip avg: 13.229 mcs
+ping - pong round trip avg: 57.201 mcs
+request - reply round trip avg: 57.903 mcs
 serialization avg: 297 ns
 ```
 
@@ -50,16 +50,16 @@ serialization avg: 297 ns
 ```
 ./client -z 1 -t 4 -v 0 -l 62 -d 1
 
-ping - pong round trip avg: 12.943 mcs
-request - reply round trip avg: 13.303 mcs
-serialization avg: 416 ns
+ping - pong round trip avg: 63.572 mcs
+request - reply round trip avg: 64.366 mcs
+serialization avg: 413 ns
 ```
 
 ### Giant strings (100k chars)
 ```
 ./client -z 1 -t 4 -v 0 -l 100000 -d 100
 
-ping - pong round trip avg: 208.484 mcs
-request - reply round trip avg: 394.265 mcs
-serialization avg: 8.589 mcs
+ping - pong round trip avg: 1.191 ms
+request - reply round trip avg: 1.322 ms
+serialization avg: 8.723 mcs
 ```
