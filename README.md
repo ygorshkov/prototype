@@ -41,28 +41,25 @@ bin/client -z 10 -t 1 -v 0
 ```
 ./client -z 1 -t 4 -v 0 -l 61 -d 1
 
-ping - pong round trip avg: 13.236 mcs
-ping - pong serialization avg: 315 ns
-request - reply round trip avg: 13.351 mcs
-request - reply serialization avg: 278 ns  // faster than ping-pong o_0
+ping - pong round trip avg: 13.356 mcs
+request - reply round trip avg: 13.229 mcs
+serialization avg: 297 ns
 ```
 
 ### Not so small strings (62 chars)
 ```
 ./client -z 1 -t 4 -v 0 -l 62 -d 1
 
-ping - pong round trip avg: 13.459 mcs
-ping - pong serialization avg: 327 ns
-request - reply round trip avg: 13.482 mcs
-request - reply serialization avg: 493 ns
+ping - pong round trip avg: 12.943 mcs
+request - reply round trip avg: 13.303 mcs
+serialization avg: 416 ns
 ```
 
 ### Giant strings (100k chars)
 ```
 ./client -z 1 -t 4 -v 0 -l 100000 -d 100
 
-ping - pong round trip avg: 349.736 mcs
-ping - pong serialization avg: 562 ns
-request - reply round trip avg: 379.994 mcs
-request - reply serialization avg: 17.139 mcs
+ping - pong round trip avg: 208.484 mcs
+request - reply round trip avg: 394.265 mcs
+serialization avg: 8.589 mcs
 ```
