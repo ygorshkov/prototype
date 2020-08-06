@@ -30,7 +30,7 @@ private:
   }
   
   void reply(message::sequence_id sequence_id, const message::Request& request) {
-    message::Reply reply{request.id, request.id, request.e, 2.71f, request.a, request.c, static_cast<int8_t>(request.d)};
+    message::Reply reply{request.id1, request.id1, request.e, 2.71f, request.a, request.c, static_cast<int8_t>(request.d)};
     send(sequence_id, reply);
   }
   

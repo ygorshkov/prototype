@@ -10,7 +10,7 @@ namespace prototype::message {
 struct Request {
   static const id message_id = request;
 
-  String id;
+  String id1;
   double f;
   int64_t d;
   int64_t e;

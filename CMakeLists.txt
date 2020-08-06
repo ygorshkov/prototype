@@ -23,7 +23,7 @@ set(CMAKE_CXX_STANDARD 17)
 enable_testing()
 
 #-Wall -Werror -Wextra
-add_compile_options(-Wc++17-extensions -march=native -g)
+add_compile_options(-march=native -g)
 
 find_program(CCACHE_PROGRAM ccache)
 if (CCACHE_PROGRAM)
@@ -38,7 +38,7 @@ endif ()
 if (LTOAvailable)
 message("Link-time optimization enabled")
 
-add_link_options(-Wl) # Magic found here: https://gcc.gnu.org/ml/gcc-help/2017-03/msg00081.html
+#add_link_options(-Wl) # Magic found here: https://gcc.gnu.org/ml/gcc-help/2017-03/msg00081.html
 else ()
 message("Link-time optimization disabled")
 endif ()
